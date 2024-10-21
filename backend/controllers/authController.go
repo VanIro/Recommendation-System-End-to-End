@@ -3,6 +3,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"recommendation-system-end-to-end/initializers"
@@ -16,15 +17,17 @@ import (
 
 func CreateUser(c *gin.Context) {
 
-	var authInput models.AuthInput
+	var authInput models.AuthInputSignup
 
 	if err := c.ShouldBindJSON(&authInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	fmt.Printf("%s", authInput)
+
 	var userFound models.User
-	initializers.DB.Where("username=?", authInput.Username).Find(&userFound)
+	initializers.DB.Where("email=?", authInput.Email).Find(&userFound)
 
 	if userFound.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "username already used"})
@@ -38,18 +41,24 @@ func CreateUser(c *gin.Context) {
 	}
 
 	user := models.User{
-		Username: authInput.Username,
-		Password: string(passwordHash),
+		Firstname: authInput.Firstname,
+		Email:     authInput.Email,
+		Password:  string(passwordHash),
 	}
 
-	initializers.DB.Create(&user)
+	db_result := initializers.DB.Create(&user)
+	if db_result.Error != nil {
+		fmt.Printf("%s", db_result.Error)
+		c.JSON(http.StatusBadRequest, gin.H{"error": db_result.Error})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": user})
 
 }
 
 func Login(c *gin.Context) {
-	var authInput models.AuthInput
+	var authInput models.AuthInputLogin
 
 	if err := c.ShouldBindJSON(&authInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -57,7 +66,7 @@ func Login(c *gin.Context) {
 	}
 
 	var userFound models.User
-	initializers.DB.Where("username=?", authInput.Username).Find(&userFound)
+	initializers.DB.Where("email=?", authInput.Email).Find(&userFound)
 
 	if userFound.ID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
