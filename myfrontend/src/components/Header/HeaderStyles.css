@@ -49,10 +49,19 @@
   max-width: 1850px;
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   margin-bottom: 175px;
   margin-right: auto;
   margin-left: auto;
+}
+.navbar-browseTypeOption
+{
+  /* max-width: 1850px;
+  width: 100%; */
+  display: flex;
+  justify-content: flex-start;
+  margin-right: auto;
+  /* margin-left: auto; */
 }
 
 .logo {
@@ -86,6 +95,10 @@
 
   /* position: relative;
   left: 40%; */
+}
+
+.header-link{
+  background-color: rgba(9, 45, 33, 0.201);
 }
 
 .header-link,

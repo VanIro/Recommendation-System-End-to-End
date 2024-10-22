@@ -24,48 +24,57 @@ import PlayerVideo from "../components/Movies/PlayerVideo";
 import PlayerOverlay from "../components/Movies/PlayerOverlay";
 import FooterCompound from "../compounds/FooterCompound";
 
-function BrowsePage() {
-  let { series } = useContent("series");
-  series = [
-    {
-      title: "Documentaries",
-      data: series.filter((item) => item.genre === "documentaries"),
-    },
-    {
-      title: "Comedies",
-      data: series.filter((item) => item.genre === "comedies"),
-    },
-    {
-      title: "Children",
-      data: series.filter((item) => item.genre === "children"),
-    },
-    { title: "Crime", data: series.filter((item) => item.genre === "crime") },
-    {
-      title: "Feel-Good",
-      data: series.filter((item) => item.genre === "feel-good"),
-    },
-  ];
+import { TMDB_API_KEY } from "../../env";
 
-  let { films } = useContent("films");
-  films = [
-    { title: "Drama", data: films.filter((item) => item.genre === "drama") },
-    {
-      title: "Thriller",
-      data: films.filter((item) => item.genre === "thriller"),
-    },
-    {
-      title: "Children",
-      data: films.filter((item) => item.genre === "children"),
-    },
-    {
-      title: "Suspense",
-      data: films.filter((item) => item.genre === "suspense"),
-    },
-    {
-      title: "Romance",
-      data: films.filter((item) => item.genre === "romance"),
-    },
-  ];
+function BrowsePage() {
+  let [ series, setSeries ] = useState([]);
+  useContent("series", (data)=>setSeries(data));
+  // series = [
+  //   {
+  //     title: "Documentaries",
+  //     data: series.filter((item) => item.genre === "documentaries"),
+  //   },
+  //   {
+  //     title: "Comedies",
+  //     data: series.filter((item) => item.genre === "comedies"),
+  //   },
+  //   {
+  //     title: "Children",
+  //     data: series.filter((item) => item.genre === "children"),
+  //   },
+  //   { title: "Crime", data: series.filter((item) => item.genre === "crime") },
+  //   {
+  //     title: "Feel-Good",
+  //     data: series.filter((item) => item.genre === "feel-good"),
+  //   },
+  // ];
+
+  let [ films, setFilms ] = useState([]);
+  useContent("films", (data)=>{
+    console.log("films:",films)
+    setFilms(data)
+  });
+  
+  console.log("Reloaded..")
+  // films = [
+  //   { title: "Drama", data: films.filter((item) => item.genre === "drama") },
+  //   {
+  //     title: "Thriller",
+  //     data: films.filter((item) => item.genre === "thriller"),
+  //   },
+  //   {
+  //     title: "Children",
+  //     data: films.filter((item) => item.genre === "children"),
+  //   },
+  //   {
+  //     title: "Suspense",
+  //     data: films.filter((item) => item.genre === "suspense"),
+  //   },
+  //   {
+  //     title: "Romance",
+  //     data: films.filter((item) => item.genre === "romance"),
+  //   },
+  // ];
 
   const [category, setCategory] = useState("films");
   const currentCategory = category === "films" ? films : series;
@@ -78,6 +87,7 @@ function BrowsePage() {
       <HeaderWrapper className="header-wrapper-browse">
         <NavBar className="navbar-browse">
           <Logo />
+          <div className="navbar-browseTypeOption">
           <HeaderLink
             className={
               category === "films" ? "header-link-bold" : "header-link"
@@ -94,7 +104,8 @@ function BrowsePage() {
             >
             Series
           </HeaderLink>
-            <SignoutButton>Logout</SignoutButton>
+          </div>
+          <SignoutButton>Logout</SignoutButton>
         </NavBar>
         <FeatureWrapper>
           <FeatureTitle className="feature-title-browse">
@@ -117,27 +128,33 @@ function BrowsePage() {
       </HeaderWrapper>
 
       <AllSlidesWrapper>
-        {currentCategory.map((slideItem) => (
+        {currentCategory&&currentCategory.map((slideItem) => {
+          console.log("here is a slideItem", slideItem)
+          return (
           <SlideWrapper key={`${category}-${slideItem.title.toLowerCase()}`}>
             <SlideTitle>{slideItem.title}</SlideTitle>
             <AllCardsWrapper>
-              {slideItem.data.map((cardItem) => (
-                <CardWrapper key={cardItem.docId}>
-                  <CardImage
-                    onClick={() => {
-                      setShowCardFeature(true);
-                      setActiveItem(cardItem);
-                    }}
-                    src={`../images/${category}/${cardItem.genre}/${cardItem.slug}/small.jpg`}
-                  />
-                </CardWrapper>
-              ))}
+              {slideItem.data.map((cardItem) => {
+                // console.log("here is a cardItem: ",cardItem)
+                return (
+                  <CardWrapper key={cardItem.id}>
+                    <CardImage
+                      onClick={() => {
+                        setShowCardFeature(true);
+                        setActiveItem(cardItem);
+                      }}
+                      // src={`../images/${category}/${cardItem.genre}/${cardItem.slug}/small.jpg`}
+                      src={`https://image.tmdb.org/t/p/original/${cardItem.poster_path}?api_key=${TMDB_API_KEY}`}
+                    />
+                  </CardWrapper>
+                )
+              })}
             </AllCardsWrapper>
             {showCardFeature &&
             slideItem.title.toLowerCase() === activeItem.genre ? (
               <CardFeatureWrapper
                 style={{
-                  backgroundImage: `url(../images/${category}/${activeItem.genre}/${activeItem.slug}/large.jpg)`,
+                  backgroundImage: `https://image.tmdb.org/t/p/original/${cardItem.backdrop_path}?api_key=${TMDB_API_KEY})`,
                 }}
               >
                 <CardTitle>{activeItem.title}</CardTitle>
@@ -154,7 +171,8 @@ function BrowsePage() {
               </CardFeatureWrapper>
             ) : null}
           </SlideWrapper>
-        ))}
+          )
+        })}
       </AllSlidesWrapper>
       <FooterCompound />
     </>
