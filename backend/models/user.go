@@ -13,4 +13,7 @@ type User struct {
 	Password  string `json:"password"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	//Received Associations
+	Ratings []UserMovieRating `gorm:"foreignKey:UserID"`
 }

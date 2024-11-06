@@ -22,10 +22,10 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{FRONTEND_URL},
-		AllowMethods:     []string{"POEST", "GET"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowOrigins:     []string{FRONTEND_URL, FRONTEND_URL + "/user/movie/rating/", "http://localhost:3000"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length", "Authorization"},
 		AllowCredentials: true,
 		// AllowOriginFunc: func(origin string) bool {
 		// 	return origin == "https://github.com"
@@ -36,6 +36,8 @@ func main() {
 	router.POST("/auth/signup", controllers.CreateUser)
 	router.POST("/auth/login", controllers.Login)
 	router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
+	router.POST("/user/movie/rating", middlewares.CheckAuth, controllers.CreateUserMovieRating)
+	router.GET("/user/movie/rating", middlewares.CheckAuth, controllers.GetUserMovieRating)
 
 	router.Run()
 

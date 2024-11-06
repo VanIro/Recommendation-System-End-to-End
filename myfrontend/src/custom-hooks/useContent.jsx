@@ -6,6 +6,29 @@ import React, { useEffect, useState, useContext } from "react";
 import {TMDB_API_KEY} from "../../env.jsx"
 const apiKey = TMDB_API_KEY;
 
+export async function fetch_trailer_url(target, itemId){
+  const map_target = {
+    series:"tv", films:"movie"
+  }
+  if(! (["tv","movie"].includes(map_target[target]))) {
+    console.error(`Invalid target '${target}', must be one of ['series', 'films'].`)
+    return;
+  }
+  var movie_videos_data = await fetch(`https://api.themoviedb.org/3/${map_target[target]}/${itemId}/videos?api_key=${TMDB_API_KEY}`).then(resp=>resp.json())
+  movie_videos_data.results = movie_videos_data.results.filter((movie_video)=>{
+    return (movie_video.site==="YouTube"
+             && movie_video.type=="Trailer"
+    )
+  })
+  console.log("movie_videos_data",movie_videos_data)
+  if(movie_videos_data.results.length){
+    var youtube_url = `https://youtube.com/watch?v=${movie_videos_data.results[0].key}`
+    return youtube_url
+  } 
+  return ""
+}//target is movie or tv
+
+
 export async function fetch_tmdb_data(target){//target is movie or tv
   
   if (!apiKey){
@@ -32,7 +55,8 @@ export async function fetch_tmdb_data(target){//target is movie or tv
               // console.log(`fetching movies list for genre '${genre.name}' of target '${target}' `);
               // console.log(`${target} list for genre ${genre.name}:`, data.results);
               var this_genre_movies=[]
-              data.results.forEach(movie=>{
+              data.results.forEach(async movie=>{
+                
                 this_genre_movies.push({
                   id:movie.id,
                   imdb_id:movie.imdb_id,
@@ -71,11 +95,12 @@ function useContent(target, fillTargetContainer) {
   const map_target = {
     series:"tv", films:"movie"
   }
-  // const [content, setContent] = useState([]);
+  const [content, setContent] = useState([]);
 
   useEffect(() => {
     fetch_tmdb_data(map_target[target]).then(fetched_genres_movies_data=>{
       fillTargetContainer(fetched_genres_movies_data)
+      setContent(fetched_genres_movies_data)
       console.log("setContent complete for target ",target, fetched_genres_movies_data)
     })
   },[]);
@@ -103,7 +128,7 @@ function useContent(target, fillTargetContainer) {
   //     });
   // }, []);
 
-  // return { [target]: content };
+  return { [target]: content };
 }
 
 export default useContent;

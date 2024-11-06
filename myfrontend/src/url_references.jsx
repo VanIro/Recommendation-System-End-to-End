@@ -1,3 +1,4 @@
 const BACKEND_BASE_URL="http://localhost:3000"
+const USER_MOVIE_RATING_URL=`${BACKEND_BASE_URL}/user/movie/rating`
 
-export {BACKEND_BASE_URL}
+export {BACKEND_BASE_URL,USER_MOVIE_RATING_URL}

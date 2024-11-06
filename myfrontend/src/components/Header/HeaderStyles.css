@@ -114,4 +114,13 @@
 
 .header-link-bold {
   font-weight: bolder;
+  text-decoration:underline;
+}
+
+.rate-button{
+  position:absolute;
+  top:0;
+  right:0;
+  /* width:10%; */
+  font-size: 50%;
 }

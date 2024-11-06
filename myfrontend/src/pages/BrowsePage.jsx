@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useContent from "../custom-hooks/useContent";
+import {fetch_trailer_url} from "../custom-hooks/useContent";
 import HeaderWrapper from "../components/Header/HeaderWrapper";
 import NavBar from "../components/Header/NavBar";
 import Logo from "../components/Header/Logo";
@@ -9,6 +10,7 @@ import FeatureWrapper from "../components/Header/FeatureWrapper";
 import FeatureTitle from "../components/Header/FeatureTitle";
 import FeatureSubTitle from "../components/Header/FeatureSubTitle";
 import PlayButton from "../components/Header/PlayButton";
+import RateButton from "../components/Header/RateButton";
 import HeaderLink from "../components/Header/HeaderLink";
 import AllSlidesWrapper from "../components/Movies/AllSlidesWrapper";
 import SlideWrapper from "../components/Movies/SlideWrapper";
@@ -27,8 +29,20 @@ import FooterCompound from "../compounds/FooterCompound";
 import { TMDB_API_KEY } from "../../env";
 
 function BrowsePage() {
-  let [ series, setSeries ] = useState([]);
-  useContent("series", (data)=>setSeries(data));
+  const [ loading, setLoading ] = useState(true);
+  const [ series, setSeries ] = useState([]);
+
+  const [category, setCategory] = useState("films");
+
+  // if(category=="series"){ 
+    useContent("series", (data)=>{
+      
+      setLoading(true)
+      // setLoading(false)
+      console.log("Series->",data)
+      setSeries(data)
+    });
+  // }
   // series = [
   //   {
   //     title: "Documentaries",
@@ -49,39 +63,61 @@ function BrowsePage() {
   //   },
   // ];
 
-  let [ films, setFilms ] = useState([]);
-  useContent("films", (data)=>{
-    console.log("films:",films)
-    setFilms(data)
-  });
+  // let [ films, setFilms ] = useState([]);
+  // if(category=="films") {
+
+    let {films} =  useContent("films", (data)=>{
+      // console.log("films:",data.length,data)
+      // setLoading(false)
+      setLoading(true)
+      // setFilms(prev=>{
+      //   // console.log("setting films:",data.length,data)
+      //   // console.log(prev==data,prev)
+      //   return data
+      // })
+    });
+    useEffect(()=>{
+      console.log("here is films after being set",films.length,films)
+      films.forEach(()=>console.log("something reloaded"))
+    },[films])
+  // }
+
   
-  console.log("Reloaded..")
   // films = [
-  //   { title: "Drama", data: films.filter((item) => item.genre === "drama") },
+    //   { title: "Drama", data: films.filter((item) => item.genre === "drama") },
+    //   {
+      //     title: "Thriller",
+      //     data: films.filter((item) => item.genre === "thriller"),
+      //   },
+      //   {
+        //     title: "Children",
+        //     data: films.filter((item) => item.genre === "children"),
+        //   },
   //   {
-  //     title: "Thriller",
-  //     data: films.filter((item) => item.genre === "thriller"),
-  //   },
-  //   {
-  //     title: "Children",
-  //     data: films.filter((item) => item.genre === "children"),
-  //   },
-  //   {
-  //     title: "Suspense",
+    //     title: "Suspense",
   //     data: films.filter((item) => item.genre === "suspense"),
   //   },
   //   {
-  //     title: "Romance",
+    //     title: "Romance",
   //     data: films.filter((item) => item.genre === "romance"),
   //   },
   // ];
 
-  const [category, setCategory] = useState("films");
   const currentCategory = category === "films" ? films : series;
   const [showCardFeature, setShowCardFeature] = useState(false);
   const [activeItem, setActiveItem] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [activeItemTrailerUrl, setActiveItemTrailerUrl] = useState("");
 
+  
+  useEffect(()=>{
+    console.log("currentCategory changed...", currentCategory)
+    setLoading(false)
+  },[films,series])
+  
+  // console.log("Reloaded.. loading=",loading,films.length, films)
+  console.log("Reloaded.. loading=")
+  console.log(currentCategory)
   return (
     <>
       <HeaderWrapper className="header-wrapper-browse">
@@ -128,8 +164,10 @@ function BrowsePage() {
       </HeaderWrapper>
 
       <AllSlidesWrapper>
-        {currentCategory&&currentCategory.map((slideItem) => {
-          console.log("here is a slideItem", slideItem)
+      {/* {console.log(`currentCategory.map will run with ${currentCategory?currentCategory.length:currentCategory} not s items`,films)} */}
+      {loading?(<div>Loading... </div>):  
+        currentCategory.map((slideItem) => {
+          // console.log("here is a slideItem", slideItem)
           return (
           <SlideWrapper key={`${category}-${slideItem.title.toLowerCase()}`}>
             <SlideTitle>{slideItem.title}</SlideTitle>
@@ -140,39 +178,52 @@ function BrowsePage() {
                   <CardWrapper key={cardItem.id}>
                     <CardImage
                       onClick={() => {
+                        console.log("click detected");
                         setShowCardFeature(true);
                         setActiveItem(cardItem);
+                        fetch_trailer_url(category,cardItem.id).then((url)=>{console.log("got trailer url: ", url);setActiveItemTrailerUrl(url)});
                       }}
                       // src={`../images/${category}/${cardItem.genre}/${cardItem.slug}/small.jpg`}
                       src={`https://image.tmdb.org/t/p/original/${cardItem.poster_path}?api_key=${TMDB_API_KEY}`}
                     />
+                    <RateButton card_data={cardItem} card_category={category}>
+                      ❤️...
+                    </RateButton>
+                    
                   </CardWrapper>
                 )
               })}
             </AllCardsWrapper>
             {showCardFeature &&
-            slideItem.title.toLowerCase() === activeItem.genre ? (
+            slideItem.title.toLowerCase() === activeItem.genre.toLowerCase() ? (
               <CardFeatureWrapper
                 style={{
-                  backgroundImage: `https://image.tmdb.org/t/p/original/${cardItem.backdrop_path}?api_key=${TMDB_API_KEY})`,
+                  backgroundImage: `url(https://image.tmdb.org/t/p/original/${activeItem.backdrop_path}?api_key=${TMDB_API_KEY})`,
                 }}
               >
                 <CardTitle>{activeItem.title}</CardTitle>
-                <CardDescription>{activeItem.description}</CardDescription>
-                <CardFeatureClose onClick={() => setShowCardFeature(false)} />
+                <CardDescription>{activeItem.overview}</CardDescription>
+                <CardFeatureClose onClick={() => {
+                  setShowCardFeature(false)
+                  setActiveItemTrailerUrl("")
+                }
+                } />
                 <PlayButton onClick={() => setShowPlayer(true)}>
                   Play
                 </PlayButton>
-                {showPlayer ? (
+                {showPlayer ? ()=>{
+                  console.log("final activeUrl",activeItemTrailerUrl)
+                  return (
                   <PlayerOverlay onClick={() => setShowPlayer(false)}>
-                    <PlayerVideo src="../videos/video.mp4" type="video/mp4" />
+                    <PlayerVideo src_url={activeItemTrailerUrl} type="video/mp4" />
                   </PlayerOverlay>
-                ) : null}
+                )} : null}
               </CardFeatureWrapper>
             ) : null}
           </SlideWrapper>
           )
-        })}
+        })
+      }
       </AllSlidesWrapper>
       <FooterCompound />
     </>

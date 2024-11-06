@@ -7,6 +7,7 @@ import SigninPage from "../pages/SigninPage"
 import LogoutPage from "../pages/LogoutPage"
 import HomePage from "../pages/HomePage";
 import BrowsePage from "../pages/BrowsePage";
+import MovieDetail from "../pages/MovieDetail";
 
 
 const Routes = () => {
@@ -22,6 +23,11 @@ const Routes = () => {
       path: "/about-us",
       element: <div>About Us</div>,
     },
+    {
+      path: "/movie-detail",
+      element: <MovieDetail />,
+    },
+
   ];
 
   // Define routes accessible only to authenticated users
