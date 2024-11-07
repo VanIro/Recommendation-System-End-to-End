@@ -23,7 +23,7 @@ func main() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{FRONTEND_URL, FRONTEND_URL + "/user/movie/rating/", "http://localhost:3000"},
-		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},
 		AllowCredentials: true,
@@ -38,6 +38,7 @@ func main() {
 	router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
 	router.POST("/user/movie/rating", middlewares.CheckAuth, controllers.CreateUserMovieRating)
 	router.GET("/user/movie/rating", middlewares.CheckAuth, controllers.GetUserMovieRating)
+	router.DELETE("/user/movie/rating", middlewares.CheckAuth, controllers.DeleteUserMovieRating)
 	router.GET("/user/ratings", middlewares.CheckAuth, controllers.GetUserRatings)
 
 	router.Run()

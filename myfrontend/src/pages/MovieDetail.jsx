@@ -92,7 +92,8 @@ function MovieDetail(){
             <FeatureWrapper style={{padding:'30px 40px',margin:'auto',backgroundImage: `url(${background_path})`,backgroundSize:'cover',backgroundRepeat:'no-repeat'}}>
             
             <FeatureTitle className="feature-title-browse">
-                Watch {movie_data.title} Now
+                Watch {movie_data[movie_category==="movie"?"original_title":"original_name"]} Now
+                
             </FeatureTitle>
             <FeatureSubTitle className="feature-subtitle-browse">
             {movie_data.overview}

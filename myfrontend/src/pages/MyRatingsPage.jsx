@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../provider/authProvider'; // Assuming you have an auth provider to manage token
 import { Link } from 'react-router-dom'; // For routing to detail page
 
+import { FaTrashAlt } from 'react-icons/fa'; // import trash icon
 
 import HeaderWrapper from "../components/Header/HeaderWrapper";
 import HeaderLink from "../components/Header/HeaderLink";
@@ -11,7 +12,10 @@ import Logo from "../components/Header/Logo";
 import SignoutButton from "../components/Header/SignoutButton";
 
 
-import {USER_RATINGS_URL} from "../url_references"
+import './MyRatingsPageStyles.css'
+
+
+import {USER_MOVIE_RATING_URL, USER_RATINGS_URL} from "../url_references"
 import { TMDB_API_KEY } from "../../env";
 
 
@@ -23,6 +27,7 @@ function MyRatingsPage(){
   const navigate = useNavigate();
   const { token } = useAuth(); 
 
+  //getch user's ratings data
   useEffect(() => {
     const fetchRatings = async () => {
       try {
@@ -52,6 +57,7 @@ function MyRatingsPage(){
     fetchRatings();
   }, [token]);
 
+  //get the movie data for each movie rated by the user
   useEffect(() => {
     const fetchMovieData = async (movieId,category) => {
       
@@ -79,6 +85,8 @@ function MyRatingsPage(){
       }
     });
   }, [ratings, movies]);
+
+  //render the rating as stars
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
     const decimalPart = rating % 1;
@@ -113,6 +121,27 @@ function MyRatingsPage(){
         ))}
       </span>
     );
+  };
+
+  const handleDeleteRating = async (movieId) => {
+    try {
+      const response = await fetch(`${USER_MOVIE_RATING_URL}?movie_id=${movieId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      // Remove the rating from the state after successful deletion
+      setRatings(prevRatings => prevRatings.filter(rating => rating.movie_id !== movieId));
+    } catch (error) {
+      setError(error.message);
+    }
   };
   
 
@@ -180,8 +209,13 @@ function MyRatingsPage(){
                         style={{ borderRadius: '8px', marginRight: '15px', width: '80px', height: '120px' }} // Fixed size for the image
                       />
                       <div>
+                      <button className='delete-button' onClick={() => handleDeleteRating(movie_rating_data.movie_id)}
+                        >
+                          <FaTrashAlt style={{ marginRight: '8px' }} />
+                          {/* Delete Rating */}
+                        </button>
                         <p>{movie_rating_data.category}</p>
-                        <h3>{movie.title}</h3>
+                        <h3>{movie[movie_rating_data.category==="movie"?"original_title":"original_name"]}</h3>
                         <p>{movie.overview.slice(0, 100)}...</p>
                         <p>Your Rating: {renderStars(movie_rating_data.rating)}</p>
                         
@@ -191,6 +225,7 @@ function MyRatingsPage(){
                         }}>
                           View Details
                         </button>
+                        
                       </div>
                     </>
                   ) : (<>

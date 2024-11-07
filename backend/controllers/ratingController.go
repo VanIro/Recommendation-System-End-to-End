@@ -165,6 +165,59 @@ func GetUserMovieRating(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func DeleteUserMovieRating(c *gin.Context) {
+	// Retrieve current user from context
+	currentUser, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	user := currentUser.(models.User)
+
+	// Parse movie ID from query or path parameter
+	movieID, err := strconv.ParseUint(c.Query("movie_id"), 10, 32)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie ID", "movie_id": c.Query("movie_id")})
+		return
+	}
+
+	// Fetch the user movie rating
+	var userMovieRating models.UserMovieRating
+	if err := initializers.DB.Where("user_id = ? AND movie_id = ?", user.ID, uint(movieID)).First(&userMovieRating).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Rating not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve rating"})
+		}
+		return
+	}
+
+	// Fetch associated tags for the rating
+	var tags []models.UserMovieRatingTag
+	if err := initializers.DB.Where("user_movie_rating_id = ?", userMovieRating.ID).Find(&tags).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tags"})
+		return
+	}
+
+	// Delete associated tags
+	if len(tags) > 0 {
+		if err := initializers.DB.Where("user_movie_rating_id = ?", userMovieRating.ID).Delete(&models.UserMovieRatingTag{}).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete tags"})
+			return
+		}
+	}
+
+	// Delete the user movie rating
+	if err := initializers.DB.Delete(&userMovieRating).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete rating"})
+		return
+	}
+
+	// Return a success message
+	c.JSON(http.StatusOK, gin.H{"message": "Rating deleted successfully"})
+}
+
 func AddTagToRating(c *gin.Context) {
 	var input struct {
 		RatingID uint   `json:"rating_id"`
