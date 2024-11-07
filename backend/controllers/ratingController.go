@@ -23,10 +23,11 @@ func CreateUserMovieRating(c *gin.Context) {
 
 	// Parse the request body
 	var input struct {
-		MovieID uint     `json:"movie_id"`
-		Rating  float64  `json:"rating"`
-		Opinion string   `json:"opinion"`
-		Tags    []string `json:"tags"`
+		MovieID  uint     `json:"movie_id"`
+		Rating   float64  `json:"rating"`
+		Opinion  string   `json:"opinion"`
+		Tags     []string `json:"tags"`
+		Category string   `json:"category"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -45,6 +46,9 @@ func CreateUserMovieRating(c *gin.Context) {
 	if userMovieRating.ID != 0 {
 		userMovieRating.Rating = input.Rating
 		userMovieRating.MovieOpinion = input.Opinion
+		if userMovieRating.Category == "" {
+			userMovieRating.Category = input.Category
+		}
 		if err := initializers.DB.Save(&userMovieRating).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update rating"})
 			return
@@ -64,6 +68,7 @@ func CreateUserMovieRating(c *gin.Context) {
 			MovieID:      input.MovieID,
 			Rating:       input.Rating,
 			MovieOpinion: input.Opinion,
+			Category:     input.Category,
 		}
 		if err := initializers.DB.Create(&userMovieRating).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create rating"})
@@ -80,6 +85,34 @@ func CreateUserMovieRating(c *gin.Context) {
 
 		c.JSON(http.StatusCreated, gin.H{"message": "Rating created successfully", "rating": userMovieRating})
 	}
+}
+
+func GetUserRatings(c *gin.Context) {
+
+	// Retrieve current user from context
+	currentUser, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	user := currentUser.(models.User)
+
+	// Fetch the user movie rating
+	var userRatings []models.UserMovieRating
+	if err := initializers.DB.Where("user_id = ?", user.ID).Find(&userRatings).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "The user's ratings not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve ratings"})
+		}
+		return
+	}
+
+	// Prepare the response data
+	response := gin.H{"ratings": userRatings}
+
+	// Respond with the user ratings as JSON
+	c.JSON(http.StatusOK, response)
 
 }
 

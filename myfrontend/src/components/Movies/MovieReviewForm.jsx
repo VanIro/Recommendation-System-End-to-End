@@ -8,6 +8,7 @@ const MovieReviewForm = ({children,api_endpoint,...rest_props}) => {
 
   const [formState, setFormState] = useState({
     movie_id:rest_props.movie_id,
+    category:rest_props.movie_category,
     rating: 0,
     opinion: '',
     tags: []
@@ -127,7 +128,7 @@ const MovieReviewForm = ({children,api_endpoint,...rest_props}) => {
             if (!response.ok) {
                 throw new Error(`${JSON.stringify(await response.json())}`);
             }
-            console.log('Data saved at the Server');
+            console.log('Data saved at the Server', formState);
         } catch (error) {
         console.error('Failed to save data:', error);
         } finally {
@@ -162,7 +163,7 @@ const debouncedSave = useCallback(
   }, [formState]);
 
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+    <div style={{ width: '500px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2>Movie Review</h2>
       
       {/* Slider for Rating */}

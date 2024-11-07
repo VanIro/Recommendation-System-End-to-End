@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useContent from "../custom-hooks/useContent";
 import {fetch_trailer_url} from "../custom-hooks/useContent";
 import HeaderWrapper from "../components/Header/HeaderWrapper";
+import HeaderLink from "../components/Header/HeaderLink";
 import NavBar from "../components/Header/NavBar";
 import Logo from "../components/Header/Logo";
 import SignoutButton from "../components/Header/SignoutButton";
@@ -11,7 +13,6 @@ import FeatureTitle from "../components/Header/FeatureTitle";
 import FeatureSubTitle from "../components/Header/FeatureSubTitle";
 import PlayButton from "../components/Header/PlayButton";
 import RateButton from "../components/Header/RateButton";
-import HeaderLink from "../components/Header/HeaderLink";
 import AllSlidesWrapper from "../components/Movies/AllSlidesWrapper";
 import SlideWrapper from "../components/Movies/SlideWrapper";
 import SlideTitle from "../components/Movies/SlideTitle";
@@ -33,6 +34,7 @@ function BrowsePage() {
   const [ series, setSeries ] = useState([]);
 
   const [category, setCategory] = useState("films");
+  const navigate = useNavigate();
 
   // if(category=="series"){ 
     useContent("series", (data)=>{
@@ -139,6 +141,15 @@ function BrowsePage() {
             onClick={() => setCategory("series")}
             >
             Series
+          </HeaderLink>
+          <HeaderLink
+            className={
+              // category === "series" ? "header-link-bold" : "header-link"
+              "header-link"
+            }
+            onClick={() => navigate("/myRatings")}
+            >
+            My Ratings
           </HeaderLink>
           </div>
           <SignoutButton>Logout</SignoutButton>

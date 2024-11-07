@@ -1,11 +1,17 @@
 /* ############### Header Section ############### */
 
+.header-wrapper-home,
+  .header-wrapper-browse,
+  .header-wrapper-details {
+    width:90vw;
+    padding: 30px 50px;
+  }
+
 .header-wrapper-home {
   background: url("/images/misc/home-bg.jpg");
   background-position: top left;
   background-size: cover;
   background-repeat: no-repeat;
-  padding: 30px 50px;
 }
 
 .header-wrapper-browse {
@@ -13,7 +19,6 @@
   background-position: center top;
   background-size: cover;
   background-repeat: no-repeat;
-  padding: 30px 50px;
 }
 
 @media (max-width: 550px) {
@@ -26,7 +31,6 @@
 .navbar-home,
 .navbar-signin {
   max-width: 1850px;
-  width: 100%;
   display: flex;
   justify-content: space-between;
   margin-bottom: 175px;
@@ -45,15 +49,21 @@
   }
 }
 
-.navbar-browse {
+
+.navbar-browse,.navbar-details {
   max-width: 1850px;
-  width: 100%;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 175px;
   margin-right: auto;
   margin-left: auto;
 }
+.navbar-browse{
+  margin-bottom: 175px;
+}
+.navbar-details{
+  margin-bottom: 50x;
+}
+
 .navbar-browseTypeOption
 {
   /* max-width: 1850px;

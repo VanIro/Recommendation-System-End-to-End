@@ -8,6 +8,7 @@ type UserMovieRating struct {
 	ID           uint    `json:"id" gorm:"primary_key"`
 	UserID       uint    `json:"user_id" gorm:"not null;uniqueIndex:idx_user_movie"`
 	MovieID      uint    `json:"movie_id" gorm:"not null;uniqueIndex:idx_user_movie"`
+	Category     string  `json:"category"`
 	Rating       float64 `json:"rating"`
 	MovieOpinion string  `json:"movie_opinion"`
 	CreatedAt    time.Time

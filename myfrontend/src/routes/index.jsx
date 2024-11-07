@@ -8,6 +8,7 @@ import LogoutPage from "../pages/LogoutPage"
 import HomePage from "../pages/HomePage";
 import BrowsePage from "../pages/BrowsePage";
 import MovieDetail from "../pages/MovieDetail";
+import MyRatingsPage from "../pages/MyRatingsPage";
 
 
 const Routes = () => {
@@ -47,6 +48,10 @@ const Routes = () => {
         {
           path: "/logout",
           element: <LogoutPage />,
+        },
+        {
+          path: "/myRatings",
+          element: <MyRatingsPage />,
         },
       ],
     },

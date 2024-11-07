@@ -11,14 +11,23 @@ import PlayerOverlay from "../components/Movies/PlayerOverlay";
 import PlayerVideo from "../components/Movies/PlayerVideo";
 import MovieReviewForm from "../components/Movies/MovieReviewForm";
 
+
+import HeaderWrapper from "../components/Header/HeaderWrapper";
+import HeaderLink from "../components/Header/HeaderLink";
+import NavBar from "../components/Header/NavBar";
+import Logo from "../components/Header/Logo";
+import SignoutButton from "../components/Header/SignoutButton";
+import FeatureWrapper from "../components/Header/FeatureWrapper";
+import FeatureTitle from "../components/Header/FeatureTitle";
+import FeatureSubTitle from "../components/Header/FeatureSubTitle";
+
 import {fetch_trailer_url} from "../custom-hooks/useContent";
 
 import {USER_MOVIE_RATING_URL} from "../url_references"
 import { TMDB_API_KEY } from "../../env";
 
 function MovieDetail(){
-    
-    const navigate = useNavigate();
+    const navigate=useNavigate();
     const location = useLocation();
     const [showPlayer, setShowPlayer] = useState(true);
     const [activeItemTrailerUrl, setActiveItemTrailerUrl] = useState("");    
@@ -38,9 +47,70 @@ function MovieDetail(){
     );
 
     const background_path = movie_data?`https://image.tmdb.org/t/p/original${movie_data.backdrop_path}?api_key=${TMDB_API_KEY}`:"";
+    const poster_path = movie_data?`https://image.tmdb.org/t/p/original${movie_data.poster_path}?api_key=${TMDB_API_KEY}`:"";
+    
 
     return (<>
-            {movie_data&&
+        <HeaderWrapper className="header-wrapper-details" >
+        <NavBar className="navbar-details">
+          <Logo />
+          <div className="navbar-browseTypeOption">
+          {/* <HeaderLink
+            className={
+              category === "films" ? "header-link-bold" : "header-link"
+            }
+            onClick={() => setCategory("films")}
+          >
+            Films
+          </HeaderLink>
+          <HeaderLink
+            className={
+              category === "series" ? "header-link-bold" : "header-link"
+            }
+            onClick={() => setCategory("series")}
+            >
+            Series
+          </HeaderLink> */}
+          <HeaderLink
+            className={
+              // category === "series" ? "header-link-bold" : "header-link"
+              "header-link"
+            }
+            onClick={() => navigate("/myRatings")}
+            >
+            My Ratings
+          </HeaderLink>
+          </div>
+          <SignoutButton>Logout</SignoutButton>
+        </NavBar>
+      </HeaderWrapper>
+
+      <div style={{
+        width:'90vw',
+        margin:'auto'
+      }}>
+            <FeatureWrapper style={{padding:'30px 40px',margin:'auto',backgroundImage: `url(${background_path})`,backgroundSize:'cover',backgroundRepeat:'no-repeat'}}>
+            
+            <FeatureTitle className="feature-title-browse">
+                Watch {movie_data.title} Now
+            </FeatureTitle>
+            <FeatureSubTitle className="feature-subtitle-browse">
+            {movie_data.overview}
+            </FeatureSubTitle>
+            <PlayButton onClick={() => setShowPlayer(true)} style={{}}>Play</PlayButton>
+            {showPlayer ? (
+                <PlayerOverlay onClick={() => setShowPlayer(false)}>
+                {/* <PlayerVideo src="./videos/video.mp4" type="video/mp4" /> */}
+                </PlayerOverlay>
+            ) : null}
+            </FeatureWrapper>
+      </div>
+      
+          
+      
+      
+
+            {/*{movie_data&&
                 (<CardFeatureWrapper
                         style={{
                         backgroundImage: `url(${background_path})`,
@@ -52,7 +122,7 @@ function MovieDetail(){
                         setShowCardFeature(false)
                         setActiveItemTrailerUrl("")
                         }
-                        } /> */}
+                        } /> 
                         <PlayButton onClick={() => setShowPlayer(true)}>
                         Play
                         </PlayButton>
@@ -64,8 +134,11 @@ function MovieDetail(){
                         </PlayerOverlay>
                         )} : null}
                 </CardFeatureWrapper>)
-            }
-            <MovieReviewForm api_endpoint={USER_MOVIE_RATING_URL} movie_id={movie_data&&movie_data.id}/>
+            }*/}
+            <div style={{display:'flex',width:'90vw', margin:'auto', padding:'30px 40px', justifyContent:'space-around'}}>
+                <div style={{width:'20%',height:'30vw',backgroundImage:`url(${poster_path}) `, backgroundSize:'contain', backgroundRepeat:'no-repeat'}} />
+                <MovieReviewForm api_endpoint={USER_MOVIE_RATING_URL} movie_id={movie_data&&movie_data.id} movie_category={movie_category}/>
+            </div>
         </>
     );
 

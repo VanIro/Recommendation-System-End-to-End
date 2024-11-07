@@ -38,6 +38,7 @@ func main() {
 	router.GET("/user/profile", middlewares.CheckAuth, controllers.GetUserProfile)
 	router.POST("/user/movie/rating", middlewares.CheckAuth, controllers.CreateUserMovieRating)
 	router.GET("/user/movie/rating", middlewares.CheckAuth, controllers.GetUserMovieRating)
+	router.GET("/user/ratings", middlewares.CheckAuth, controllers.GetUserRatings)
 
 	router.Run()
 
