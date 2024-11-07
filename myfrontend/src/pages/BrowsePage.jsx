@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useContent from "../custom-hooks/useContent";
 import {fetch_trailer_url} from "../custom-hooks/useContent";
 import HeaderWrapper from "../components/Header/HeaderWrapper";
@@ -30,11 +30,16 @@ import FooterCompound from "../compounds/FooterCompound";
 import { TMDB_API_KEY } from "../../env";
 
 function BrowsePage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const data = location.state
+  console.log('browsepage->',data)
+
   const [ loading, setLoading ] = useState(true);
   const [ series, setSeries ] = useState([]);
 
-  const [category, setCategory] = useState("films");
-  const navigate = useNavigate();
+  const [category, setCategory] = useState(data.categoryTarget?data.categoryTarget:"films");
+
 
   // if(category=="series"){ 
     useContent("series", (data)=>{

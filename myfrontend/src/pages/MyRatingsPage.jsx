@@ -158,7 +158,7 @@ function MyRatingsPage(){
                 className={
                  "header-link"
                 }
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/",{state:{categoryTarget:"films"}})}
             >
                 Films
             </HeaderLink>
@@ -166,7 +166,7 @@ function MyRatingsPage(){
                 className={
                     "header-link"
                 }
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/",{state:{categoryTarget:"series"}})}
                 >
                 Series
             </HeaderLink>
