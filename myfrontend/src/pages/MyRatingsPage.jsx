@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../provider/authProvider'; // Assuming you have an auth provider to manage token
+import { useAuth } from '../provider/authProvider'; 
 import { Link } from 'react-router-dom'; // For routing to detail page
 
 import { FaTrashAlt } from 'react-icons/fa'; // import trash icon

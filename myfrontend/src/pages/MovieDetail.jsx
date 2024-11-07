@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FaTrashAlt } from 'react-icons/fa'; // import trash icon
 
 import CardFeatureWrapper from "../components/Movies/CardFeatureWrapper";
 
@@ -20,6 +21,7 @@ import SignoutButton from "../components/Header/SignoutButton";
 import FeatureWrapper from "../components/Header/FeatureWrapper";
 import FeatureTitle from "../components/Header/FeatureTitle";
 import FeatureSubTitle from "../components/Header/FeatureSubTitle";
+import { useAuth } from '../provider/authProvider'; 
 
 import {fetch_trailer_url} from "../custom-hooks/useContent";
 
@@ -30,8 +32,10 @@ function MovieDetail(){
     const navigate=useNavigate();
     const location = useLocation();
     const [showPlayer, setShowPlayer] = useState(true);
+    const [deleteError, setDeleteError] = useState("");
     const [activeItemTrailerUrl, setActiveItemTrailerUrl] = useState("");    
     
+    const {token} = useAuth();
     const data = location.state
     const movie_data = (data&&("movie_data"in data))?data["movie_data"]:null;
     const movie_category = (data&&("movie_category"in data))?data["movie_category"]:null;
@@ -49,6 +53,26 @@ function MovieDetail(){
     const background_path = movie_data?`https://image.tmdb.org/t/p/original${movie_data.backdrop_path}?api_key=${TMDB_API_KEY}`:"";
     const poster_path = movie_data?`https://image.tmdb.org/t/p/original${movie_data.poster_path}?api_key=${TMDB_API_KEY}`:"";
     
+
+    const handleDeleteRating = async (movieId) => {
+        try {
+          const response = await fetch(`${USER_MOVIE_RATING_URL}?movie_id=${movieId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+    
+          if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+          }
+          navigate("/myRatings");
+        } catch (error) {
+          setDeleteError(error.message);
+        }
+    };
+
 
     return (<>
         <HeaderWrapper className="header-wrapper-details" >
@@ -139,6 +163,17 @@ function MovieDetail(){
             <div style={{display:'flex',width:'90vw', margin:'auto', padding:'30px 40px', justifyContent:'space-around'}}>
                 <div style={{width:'20%',height:'30vw',backgroundImage:`url(${poster_path}) `, backgroundSize:'contain', backgroundRepeat:'no-repeat'}} />
                 <MovieReviewForm api_endpoint={USER_MOVIE_RATING_URL} movie_id={movie_data&&movie_data.id} movie_category={movie_category}/>
+                    <div style={{width:'22%', alignItems:'center'}} >
+                        <button className='delete-button' onClick={() => handleDeleteRating(movie_data.id)}
+                            style={{height:'min-content'}}
+                        >
+                          <FaTrashAlt style={{ marginRight: '8px' }} />
+                          Delete This Rating
+                        </button>
+                        <div style={{color:'red'}}>
+                            {deleteError}
+                        </div>
+                    </div>
             </div>
         </>
     );
