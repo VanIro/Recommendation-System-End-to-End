@@ -61,21 +61,21 @@ function MyRatingsPage(){
   useEffect(() => {
     const fetchMovieData = async (movieId,category) => {
       
-    const map_target = {
-      series:"tv", films:"movie"
-    }
-    if(! (["tv","movie"].includes(map_target[category]))) {
-      console.error(`Invalid target '${category}', must be one of ['series', 'films'].`)
-      return;
-    }
-    try {
-      const response = await fetch(`https://api.themoviedb.org/3/${map_target[category]}/${movieId}?api_key=${TMDB_API_KEY}`);
-      if (!response.ok) throw new Error("Failed to fetch movie data");
-      const movieData = await response.json();
-      setMovies(prevMovies => ({ ...prevMovies, [movieId]: movieData }));
-    } catch (error) {
-      console.error("Error fetching movie data:", error);
-    }
+      const map_target = {
+        series:"tv", films:"movie"
+      }
+      if(! (["tv","movie"].includes(map_target[category]))) {
+        console.error(`Invalid target '${category}', must be one of ['series', 'films'].`)
+        return;
+      }
+      try {
+        const response = await fetch(`https://api.themoviedb.org/3/${map_target[category]}/${movieId}?api_key=${TMDB_API_KEY}`);
+        if (!response.ok) throw new Error("Failed to fetch movie data");
+        const movieData = await response.json();
+        setMovies(prevMovies => ({ ...prevMovies, [movieId]: movieData }));
+      } catch (error) {
+        console.error("Error fetching movie data:", error);
+      }
     };
 
     // Fetch data for each movie in ratings if not already loaded

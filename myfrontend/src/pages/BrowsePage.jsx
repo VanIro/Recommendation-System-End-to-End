@@ -28,17 +28,95 @@ import PlayerOverlay from "../components/Movies/PlayerOverlay";
 import FooterCompound from "../compounds/FooterCompound";
 
 import { TMDB_API_KEY } from "../../env";
+import { useAuth } from "../provider/authProvider";
+import { USER_RECOMMENDATIONS_URL } from "../url_references";
 
 function BrowsePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const data = location.state
   console.log('browsepage->',data)
+  const {token} = useAuth()
 
   const [ loading, setLoading ] = useState(true);
   const [ series, setSeries ] = useState([]);
 
-  const [category, setCategory] = useState(data.categoryTarget?data.categoryTarget:"films");
+  const [category, setCategory] = useState((data&&data.categoryTarget)?data.categoryTarget:"films");
+  const [recommendations, setRecommendations] = useState([])
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false)
+  const [recMoviesData,setRecMoviesData] = useState({})
+
+
+  useEffect(()=>{
+    const fetchRecommendations = async () => {
+      try {
+        console.log('token',`Bearer ${token}`)
+        setRecommendationsLoading(true);
+        const response = await fetch(USER_RECOMMENDATIONS_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();        
+        console.log('recommendations->',JSON.parse(data.recommendations))
+
+        setRecommendations(JSON.parse(data.recommendations));
+      } catch (error) {
+        console.log('Recommendation error',error)
+        // setError(error.message);
+      } finally {
+        setRecommendationsLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  },[])
+  useEffect(()=>{
+    
+    const fetchRecMoviesData = async (movieId,category='films') => {
+      
+      const map_target = {
+        series:"tv", films:"movie"
+      }
+      if(! (["tv","movie"].includes(map_target[category]))) {
+        console.error(`Invalid target '${category}', must be one of ['series', 'films'].`)
+        return;
+      }
+      try {
+        const response = await fetch(`https://api.themoviedb.org/3/${map_target[category]}/${movieId}?api_key=${TMDB_API_KEY}`);
+        if (!response.ok) throw new Error("Failed to fetch movie data");
+        const movieData = await response.json();
+        const processedMovieData ={
+          id:movieData.id,
+          imdb_id:movieData.imdb_id,
+          genre:'Recommended',
+          title:movieData['original_title'],//movie[target==="movie"?"original_title":"original_name"],
+          overview:movieData.overview,
+          popularity: movieData.popularity,
+          poster_path: movieData.poster_path,
+          backdrop_path: movieData.backdrop_path,
+          vote_average: movieData.vote_average,
+          vote_count: movieData.vote_count
+        }
+        setRecMoviesData(prevRecMoviesData => ({ ...prevRecMoviesData, [movieId]: processedMovieData }));
+      } catch (error) {
+        console.error("Error fetching movie data:", error);
+      }
+    };
+
+    recommendations.forEach((rec_movie)=>{
+      fetchRecMoviesData(rec_movie.tmdbId);
+    })
+  },[recommendations])
+  
+
 
 
   // if(category=="series"){ 
@@ -124,7 +202,7 @@ function BrowsePage() {
   
   // console.log("Reloaded.. loading=",loading,films.length, films)
   console.log("Reloaded.. loading=")
-  console.log(currentCategory)
+  console.log("recMoviesData",recMoviesData)
   return (
     <>
       <HeaderWrapper className="header-wrapper-browse">
@@ -180,14 +258,74 @@ function BrowsePage() {
       </HeaderWrapper>
 
       <AllSlidesWrapper>
+        <SlideWrapper key={`Recommendations`}>
+            <SlideTitle>あなたにお勧め</SlideTitle>
+            <AllCardsWrapper key='1AllCardsWrapper'>
+              {
+              recommendations.map((cardItem) => {
+                console.log("cardItem",cardItem.id)
+
+                  return (
+                    
+                    <CardWrapper key={cardItem.id}>
+                      {recMoviesData[cardItem.tmdbId]?
+                      <CardImage
+                        onClick={() => {
+                          console.log("click detected");
+                          setShowCardFeature(true);
+                          setActiveItem(recMoviesData[cardItem.tmdbId]);
+                          fetch_trailer_url('films',cardItem.id).then((url)=>{console.log("got trailer url: ", url);setActiveItemTrailerUrl(url)});
+                        }}
+                        // src={`../images/${category}/${cardItem.genre}/${cardItem.slug}/small.jpg`}
+                        src={`https://image.tmdb.org/t/p/original/${recMoviesData[cardItem.tmdbId].poster_path}?api_key=${TMDB_API_KEY}`}
+                      />:"Loading data..."}
+                      <RateButton card_data={recMoviesData[cardItem.tmdbId]} card_category={'films'}>
+                        ❤️...
+                      </RateButton>
+                      
+                    </CardWrapper>
+                  )
+                })}
+            </AllCardsWrapper>
+            {showCardFeature &&
+            'recommended' === activeItem.genre.toLowerCase() ? (
+              <CardFeatureWrapper
+                style={{
+                  backgroundImage: `url(https://image.tmdb.org/t/p/original/${activeItem.backdrop_path}?api_key=${TMDB_API_KEY})`,
+                }}
+              >
+                <CardTitle>{activeItem.title}</CardTitle>
+                <CardDescription>{activeItem.overview}</CardDescription>
+                <CardFeatureClose onClick={() => {
+                  setShowCardFeature(false)
+                  setActiveItemTrailerUrl("")
+                }
+                } />
+                <PlayButton onClick={() => setShowPlayer(true)}>
+                  Play
+                </PlayButton>
+                {showPlayer ? ()=>{
+                  console.log("final activeUrl",activeItemTrailerUrl)
+                  return (
+                  <PlayerOverlay onClick={() => setShowPlayer(false)}>
+                    <PlayerVideo src_url={activeItemTrailerUrl} type="video/mp4" />
+                  </PlayerOverlay>
+                )} : null}
+              </CardFeatureWrapper>
+            ) : null}
+        </SlideWrapper>
+
+      
+
+
       {/* {console.log(`currentCategory.map will run with ${currentCategory?currentCategory.length:currentCategory} not s items`,films)} */}
       {loading?(<div>Loading... </div>):  
-        currentCategory.map((slideItem) => {
+        currentCategory.map((slideItem,i) => {
           // console.log("here is a slideItem", slideItem)
           return (
           <SlideWrapper key={`${category}-${slideItem.title.toLowerCase()}`}>
             <SlideTitle>{slideItem.title}</SlideTitle>
-            <AllCardsWrapper>
+            <AllCardsWrapper key={`${i+1}AllCardsWrapper`}>
               {slideItem.data.map((cardItem) => {
                 // console.log("here is a cardItem: ",cardItem)
                 return (

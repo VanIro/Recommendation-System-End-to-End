@@ -18,7 +18,6 @@ import (
 func CheckAuth(c *gin.Context) {
 
 	authHeader := c.GetHeader("Authorization")
-
 	if authHeader == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is missing"})
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -27,6 +26,7 @@ func CheckAuth(c *gin.Context) {
 
 	authToken := strings.Split(authHeader, " ")
 	if len(authToken) != 2 || authToken[0] != "Bearer" {
+
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
@@ -39,6 +39,7 @@ func CheckAuth(c *gin.Context) {
 		}
 		return []byte(os.Getenv("SECRET")), nil
 	})
+
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 		c.AbortWithStatus(http.StatusUnauthorized)

@@ -40,6 +40,7 @@ func main() {
 	router.GET("/user/movie/rating", middlewares.CheckAuth, controllers.GetUserMovieRating)
 	router.DELETE("/user/movie/rating", middlewares.CheckAuth, controllers.DeleteUserMovieRating)
 	router.GET("/user/ratings", middlewares.CheckAuth, controllers.GetUserRatings)
+	router.GET("user/recommendations",middlewares.CheckAuth, controllers.GetUserRecommendations)
 
 	router.Run()
 
